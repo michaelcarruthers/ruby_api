@@ -11,7 +11,15 @@ class Player
 	attr_accessor :firstName,:lastName,:rank,:team,:pos
 
   def initialize(firstname, lastname, rank, team, pos)
-    @firstName = firstname; @lastName = lastname; @rank = rank; @team = team; @pos = pos
+    @firstName = firstname
+    @lastName = lastname
+    @rank = rank
+    @team = team
+    @pos = pos
+  end
+
+  def to_s
+    puts "#{firstName} #{lastName}, #{team} #{pos}, rank:#{rank}"
   end
 
 end
@@ -26,7 +34,7 @@ def nfl_api_caller(url)
 	end
 
 	players.each do |p|
-		PLAYERS.push(Player.new(p['firstName'],p['lastName'],p['rank'],p['teamAbbr'],p['position']))
+		PLAYERS << Player.new(p['firstName'],p['lastName'],p['rank'],p['teamAbbr'],p['position'])
 	end
 end
 
@@ -34,24 +42,19 @@ def nfl_api_looper(number_of_records)
 
   url = 'http://api.fantasy.nfl.com/players/editordraftranks?format=json'
 
-  if number_of_records <=100
-    nfl_api_caller(url + "&count=#{number_of_records}")
-  else
-  	# deal with multiple API queries
-    times = number_of_records/100
-    offset = 0
-    for i in 1..times+1.round do
-      nfl_api_caller(url+"&count=100&offset=#{offset}")
-      offset += 100
-    end
+  times = number_of_records/100 + 1
+  offset = 0
+  for i in 1..times.round do
+    nfl_api_caller(url+"&count=100&offset=#{offset}")
+    offset += 100
+  end
 
-    # delete extra records
-    for i in number_of_records..PLAYERS.length do 
-      PLAYERS.delete_at(i)
-    end
+  # delete extra records
+  for i in number_of_records..PLAYERS.length-1 do 
+    PLAYERS.pop
   end
 end
 
-nfl_api_looper(290)
-PLAYERS.each {|i| puts "#{i.firstName} #{i.lastName}, #{i.team} #{i.pos}, rank:#{i.rank}"}
+nfl_api_looper(1)
+PLAYERS.each {|i| i.to_s}
 puts PLAYERS.length
